@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive 3D Globe - Single/Multi Pin Mode</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <div class="overlay">
+    <h1>Hello World</h1>
+    <div class="hint">Click bất kỳ đâu trên quả cầu để tìm tọa độ</div>
+  </div>
+
+  <!-- Bảng điều hướng & Tùy chọn -->
+  <div class="ui-panel">
+    <!-- Checkbox chuyển đổi chế độ chọn nhiều pin -->
+    <div class="mode-selector">
+      <label>
+        <input type="checkbox" id="multiPinToggle" onchange="toggleMultiPin(this)"> 
+        Cho phép chọn nhiều pin
+      </label>
+    </div>
+
+    <button class="btn-location" onclick="focusLocation(21.0285, 105.8542, 'Hà Nội, Việt Nam')">🇻🇳 Hà Nội</button>
+    <button class="btn-location" onclick="focusLocation(40.7128, -74.0060, 'New York, Mỹ')">🇺🇸 New York</button>
+    <button class="btn-location" onclick="focusLocation(35.6762, 139.6503, 'Tokyo, Nhật Bản')">🇯🇵 Tokyo</button>
+    <button class="btn-location btn-clear" onclick="clearAllPins()">🗑️ Xóa Pin</button>
+  </div>
+
+  <!-- Bảng hiển thị thông tin -->
+  <div id="infoPopup" class="info-popup">
+    <h3 id="popupTitle">Vị trí đã chọn</h3>
+    <p id="popupCoords">Vĩ độ: 0.00° | Kinh độ: 0.00°</p>
+    <button class="close-popup" onclick="closePopup()">Đóng</button>
+  </div>
+
+  <div id="canvas-container"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
