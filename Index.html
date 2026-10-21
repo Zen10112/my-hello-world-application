@@ -1,43 +1,75 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interactive 3D Globe - Single/Multi Pin Mode</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#081317">
+  <meta name="description" content="Không gian khám phá Trái Đất 3D, lưu địa điểm và xây dựng hành trình của riêng bạn.">
+  <title>ORBIT — Không gian khám phá</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script defer src="city-search.js"></script>
+  <script defer src="script.js"></script>
 </head>
 <body>
-  <div class="overlay">
-    <h1>Hello World</h1>
-    <div class="hint">Click bất kỳ đâu trên quả cầu để tìm tọa độ</div>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="./Index.html" aria-label="Orbit, trang chủ"><span class="brand-mark" aria-hidden="true">◎</span><span>orbit<span class="brand-dot">.</span></span><small>EARTH EXPLORER</small></a>
+      <div class="sidebar-intro"><span class="eyebrow">MỘT HÀNH TINH. VÔ VÀN ĐIỂM ĐẾN.</span><h1>Thế giới trong <br>tầm tay bạn<span>.</span></h1><p>Khám phá một nơi mới.<br>Vẽ nên hành trình của riêng mình.</p></div>
+      <nav class="tabs" role="tablist" aria-label="Công cụ khám phá">
+        <button id="tabExplore" role="tab" aria-selected="true" aria-controls="panelExplore" data-panel="panelExplore">Khám phá</button>
+        <button id="tabSaved" role="tab" aria-selected="false" aria-controls="panelSaved" data-panel="panelSaved" tabindex="-1">Hành trình <span id="pinCount">0</span></button>
+        <button id="tabTools" role="tab" aria-selected="false" aria-controls="panelTools" data-panel="panelTools" tabindex="-1">Công cụ</button>
+      </nav>
+      <div class="sidebar-content">
+        <section id="panelExplore" role="tabpanel" aria-labelledby="tabExplore">
+          <label class="field-label" for="citySearch">ĐIỂM ĐẾN TIẾP THEO</label>
+          <div class="search-field"><span aria-hidden="true">⌕</span><input id="citySearch" type="search" placeholder="Tên thành phố, ví dụ: Đà Lạt…" maxlength="100" autocomplete="off" aria-controls="cityResults" aria-describedby="searchStatus"></div>
+          <div class="section-heading"><h2 id="searchHeading">Gợi ý khám phá</h2><span id="searchCount"></span></div>
+          <p id="searchStatus" class="search-status muted small" role="status" aria-live="polite" aria-atomic="true"></p>
+          <ul id="cityResults" class="city-results" aria-label="Kết quả tìm địa điểm" aria-busy="false"></ul>
+          <button id="retrySearch" class="secondary-button search-retry" type="button" hidden>Thử tìm lại</button>
+          <p class="muted small search-credit">Tìm thành phố trên toàn thế giới. Có thể thêm quốc gia, ví dụ “Paris, France”. Dữ liệu: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> / <a href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer">GeoNames</a>.</p>
+          <button id="sampleTrip" class="trip-card"><span class="eyebrow">MỘT CHÚT CẢM HỨNG</span><strong>Ba điểm chạm châu Á <span aria-hidden="true">↗</span></strong><span>Hà Nội · Singapore · Tokyo</span><small>Thêm hành trình gợi ý vào danh sách của bạn</small></button>
+        </section>
+        <section id="panelSaved" role="tabpanel" aria-labelledby="tabSaved" hidden>
+          <div class="section-heading"><h2>Hành trình của bạn</h2><button id="clearPins" class="text-button danger">Xóa tất cả</button></div>
+          <label class="switch-row"><span>Giữ nhiều điểm đến<small>Tắt để chỉ giữ điểm mới nhất</small></span><input id="multiPinToggle" type="checkbox"></label>
+          <ol id="pinList" class="pin-list"></ol>
+          <div class="distance-card"><span class="eyebrow">KHOẢNG CÁCH TRÊN BỀ MẶT TRÁI ĐẤT</span><p id="distanceInfo" aria-live="polite">Thêm hai điểm để bắt đầu.</p></div>
+          <p id="storageStatus" class="muted small" role="status">Tự động lưu trên trình duyệt này.</p>
+        </section>
+        <section id="panelTools" role="tabpanel" aria-labelledby="tabTools" hidden>
+          <form id="coordinateForm">
+            <h2>Đi đến tọa độ</h2><p class="muted small">Đánh dấu chính xác nơi bạn muốn khám phá.</p>
+            <label class="field-label" for="locationName">TÊN ĐỊA ĐIỂM</label><input id="locationName" maxlength="120" placeholder="Một nơi đặc biệt…">
+            <div class="coordinate-fields"><div><label for="latitude">Vĩ độ</label><input id="latitude" type="number" min="-90" max="90" step="any" placeholder="21.0285" required></div><div><label for="longitude">Kinh độ</label><input id="longitude" type="number" min="-180" max="180" step="any" placeholder="105.8542" required></div></div>
+            <button class="primary-button" type="submit">Đặt điểm đến <span aria-hidden="true">↗</span></button>
+          </form>
+          <div class="data-tools"><h2>Mang hành trình theo bạn</h2><p class="muted small">Xuất bản sao JSON để lưu trữ hoặc mở lại trên thiết bị khác. Nhập JSON sẽ thay thế danh sách hiện tại.</p><div class="button-pair"><button id="exportPins" class="secondary-button">↓ Xuất JSON</button><button id="importPins" class="secondary-button">↑ Nhập JSON</button></div><input id="importFile" type="file" accept=".json,application/json" hidden></div>
+        </section>
+      </div>
+      <footer class="sidebar-footer"><span class="status-dot"></span> KHÔNG GIAN KHÁM PHÁ CỦA BẠN <span>01 / EARTH</span></footer>
+    </aside>
+    <main class="workspace">
+      <header class="workspace-header"><div><span class="eyebrow">GÓC NHÌN TOÀN CẦU</span><h2>Mỗi nơi, một câu chuyện.</h2></div><span class="live-badge"><i></i> TƯƠNG TÁC 3D</span></header>
+      <section class="globe-stage" aria-label="Không gian Trái Đất 3D">
+        <div class="stage-caption"><span class="crosshair" aria-hidden="true">＋</span><span>HÀNH TINH XANH<small>23.4° AXIAL TILT / SOL SYSTEM</small></span></div>
+        <div id="canvas-container"></div>
+        <div id="sceneError" class="scene-error" role="alert" hidden>Không thể tải không gian 3D. Hãy kiểm tra kết nối mạng và bật WebGL trên trình duyệt, rồi tải lại trang.</div>
+        <div class="stage-scale" aria-hidden="true"><span>90° N</span><i></i><span>0°</span><i></i><span>90° S</span></div>
+        <div class="view-switch" role="group" aria-label="Kiểu hiển thị"><button data-view="earth" aria-pressed="true">Tự nhiên</button><button data-view="faceted" aria-pressed="false">Đa diện</button><button data-view="hologram" aria-pressed="false">Lưới sáng</button></div>
+        <div class="globe-controls" aria-label="Điều khiển góc nhìn"><button id="zoomIn" aria-label="Phóng to">＋</button><button id="zoomOut" aria-label="Thu nhỏ">−</button><span></span><button id="resetView" aria-label="Đặt lại góc nhìn">⌖</button><button id="rotateToggle" aria-pressed="true" aria-label="Bật hoặc tắt tự xoay">↻</button></div>
+        <div id="infoPopup" class="info-popup" hidden>
+          <div class="popup-heading"><span class="eyebrow">ĐỊA ĐIỂM ĐÃ CHỌN</span><button id="closePopup" aria-label="Đóng thông tin">×</button></div>
+          <h3 id="popupTitle">Vị trí đã chọn</h3><p id="popupCoords"></p>
+          <form id="renameForm"><label class="sr-only" for="pinName">Tên địa điểm</label><input id="pinName" maxlength="120" required placeholder="Đặt tên địa điểm"><button type="submit">Lưu tên</button></form>
+        </div>
+        <div class="stage-bottom"><span><i></i> Kéo để xoay · Cuộn để thu phóng · Chạm để đặt pin</span><span id="viewLabel">NATURAL VIEW / 01</span></div>
+      </section>
+      <footer class="workspace-footer"><div class="metric"><span>ĐIỂM ĐÃ LƯU</span><strong id="statPins">00</strong></div><div class="metric"><span>TỔNG HÀNH TRÌNH</span><strong><span id="totalDistance">0</span> <small>km</small></strong></div><div class="layer-controls"><label><input id="routeToggle" type="checkbox" checked> Nối hành trình</label><label><input id="gridToggle" type="checkbox"> Lưới tọa độ</label></div></footer>
+    </main>
   </div>
-
-  <!-- Bảng điều hướng & Tùy chọn -->
-  <div class="ui-panel">
-    <!-- Checkbox chuyển đổi chế độ chọn nhiều pin -->
-    <div class="mode-selector">
-      <label>
-        <input type="checkbox" id="multiPinToggle" onchange="toggleMultiPin(this)"> 
-        Cho phép chọn nhiều pin
-      </label>
-    </div>
-
-    <button class="btn-location" onclick="focusLocation(21.0285, 105.8542, 'Hà Nội, Việt Nam')">🇻🇳 Hà Nội</button>
-    <button class="btn-location" onclick="focusLocation(40.7128, -74.0060, 'New York, Mỹ')">🇺🇸 New York</button>
-    <button class="btn-location" onclick="focusLocation(35.6762, 139.6503, 'Tokyo, Nhật Bản')">🇯🇵 Tokyo</button>
-    <button class="btn-location btn-clear" onclick="clearAllPins()">🗑️ Xóa Pin</button>
-  </div>
-
-  <!-- Bảng hiển thị thông tin -->
-  <div id="infoPopup" class="info-popup">
-    <h3 id="popupTitle">Vị trí đã chọn</h3>
-    <p id="popupCoords">Vĩ độ: 0.00° | Kinh độ: 0.00°</p>
-    <button class="close-popup" onclick="closePopup()">Đóng</button>
-  </div>
-
-  <div id="canvas-container"></div>
-
-  <script src="script.js"></script>
+  <div id="toast" class="toast" role="status" hidden></div>
 </body>
 </html>
